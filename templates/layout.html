@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Personal Learning Journal</title>
+        <link href="https://fonts.googleapis.com/css?family=Cousine:400" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Work+Sans:600" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/normalize.css">
+        <link rel="stylesheet" href="/static/css/site.css">
+    </head>
+    <body>
+    	<header>
+            <div class="container">
+                <div class="site-header">
+                    <a class="logo" href="{{ url_for('index') }}"><i class="material-icons">library_books</i></a>
+                    <a class="button icon-right" href="{{ url_for('new') }}"><span>New Entry</span> <i class="material-icons">add</i></a>
+                </div>
+                <div>
+                <!-- Flash messages -->
+                {% with  messages = get_flashed_messages(with_categories=True) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="notification {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                </div>
+                <div>
+                {% if current_user.is_authenticated %}
+                    <br class="left">Hello {{ current_user.username }}
+                    <br><a class="left" href="{{ url_for('logout') }}"><span>Logout</span></a>
+                {% else %}
+                    {% if request.path not in ('/login', '/register') %}
+                        <br>
+                            <a class="left" href="{{ url_for('login') }}">Login\ </a>
+                            <a class="left" href="{{ url_for('register') }}">Register</a>
+                        </br>
+                    {% endif %}
+                {% endif %}
+                </div>
+            </div>
+        </header>
+        <section>
+            <div class="container">
+        	    {% block content %}{% endblock %}
+            </div>
+        </section>
+        <footer>
+            <div>
+                &copy; MyJournal
+            </div>
+        </footer>
+    </body>
+</html>

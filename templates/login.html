@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+{% from 'macros.html' import render_field %}
+
+{% block content %}
+    <div class="new-entry">
+        <h2 align="center">Login</h2>
+        <form method='POST' action=''>
+          {{ form.hidden_tag() }}
+          <div class="row">
+            <div class="six columns">
+              {{ render_field(form.email) }}
+            </div>
+            <div class="six columns">
+              {{ render_field(form.password) }}
+            </div>
+          </div>
+          <div class="u-full-width">
+            <input type="submit" id="submit" value="Login" class="button">
+            <a href="{{ url_for('index') }}" class="button button-secondary">Cancel</a>
+          </div>
+        </form>
+    </div>
+{% endblock %}
