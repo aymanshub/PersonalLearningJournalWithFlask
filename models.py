@@ -1,3 +1,6 @@
+"""
+Models definition, fields and methods
+"""
 import datetime
 import re
 
@@ -5,7 +8,7 @@ from flask_bcrypt import generate_password_hash
 from flask_login import UserMixin
 from peewee import *
 
-#DATABASE = SqliteDatabase('social.db')
+# db filename with enabling foreign key constraints in SQLite
 DATABASE = SqliteDatabase('social.db', pragmas={'foreign_keys': 1})
 
 
@@ -75,6 +78,10 @@ class Tag(Model):
 
 
 def initialize():
+    """
+    Data-Base & Models initialization.
+    :return: None
+    """
     DATABASE.connect()
     DATABASE.create_tables([User, Entry, Tag], safe=True)
     DATABASE.close()

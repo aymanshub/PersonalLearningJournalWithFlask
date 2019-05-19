@@ -1,3 +1,6 @@
+"""
+Defining all needed Forms used by the application.
+"""
 from flask_wtf import Form
 from wtforms import StringField, PasswordField, TextAreaField, DateField, \
     IntegerField
@@ -56,6 +59,7 @@ class LoginForm(Form):
 
 class JEntryForm(Form):
     title = StringField("Title", validators=[DataRequired()])
+    # DateField is an optional, yet restricted to the format.
     date = DateField("Date", validators=[Optional()], format='%d/%m/%Y')
     time_spent = IntegerField(
         "Time Spent",

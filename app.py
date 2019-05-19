@@ -1,3 +1,10 @@
+"""
+Python Web Development Techdegree
+Project 5 - Personal Learning Journal With Flask
+--------------------------------
+Developed by: Ayman Said
+May-2019
+"""
 import datetime
 import re
 
@@ -47,6 +54,10 @@ def after_request(response):
 
 @app.route('/register', methods=('GET', 'POST'))
 def register():
+    """
+    Register view for new users who'd like to register
+    :return: a rendered register.html template
+    """
     form = forms.RegisterForm()
     if form.validate_on_submit():
         try:
@@ -58,13 +69,17 @@ def register():
         except ValueError as e:
             flash("{}".format(e), "error")
         else:
-            flash("Yay, you registered!", "success")
+            flash("Welcome, you registered!", "success")
         return redirect(url_for('index'))
     return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Login view for the registered users
+    :return: a rendered login.html template
+    """
     form = forms.LoginForm()
     if form.validate_on_submit():
         try:
@@ -84,6 +99,10 @@ def login():
 @app.route('/logout')
 @login_required
 def logout():
+    """
+    Logout view for logged-in user
+    :return: redirect to the index view
+    """
     logout_user()
     flash("You've been logged out!", "success")
     return redirect(url_for('index'))
@@ -92,7 +111,14 @@ def logout():
 @app.route('/entries/<slug>/edit', methods=['GET', 'POST'])  # The Edit route
 @login_required
 def edit(slug):
+    """
+    Edit entry view, for the logged-in entry owner user.
+    All entry content fields can be modified.
+    :param slug: Charfield Entry Model value, entry identifier
+    :return: a rendered edit.html template page for the selected entry
+    """
     entry = models.Entry.get(models.Entry.slug == slug)
+    # Security check: Only entry owner can edit the entry
     if g.user.id != entry.user.id:
         flash("You can't edit this entry \
                     only entry owner can edit it!", "error")
@@ -102,8 +128,12 @@ def edit(slug):
         form = forms.JEntryForm(request.values, obj=entry)
         if form.validate_on_submit():
             entry.title = form.title.data
-            entry.slug = re.sub(r'[^\w]+', '-', form.title.data.lower()).strip('-')
-            entry.date = form.date.data if form.date.data else datetime.date.today()
+            # non unicode word character(white-spaces),
+            # is substituted by a hyphen.
+            entry.slug = re.sub(r'[^\w]+', '-',
+                                form.title.data.lower()).strip('-')
+            entry.date = form.date.data \
+                if form.date.data else datetime.date.today()
             entry.time_spent = form.time_spent.data
             entry.learned = form.learned.data
             entry.resources = form.resources.data
@@ -112,18 +142,23 @@ def edit(slug):
             except models.IntegrityError:
                 raise ValueError("User already exists!")
 
-            # tags update
-            old_tags = list(dict.fromkeys(filter(None, entry.tags.split("#"))))
-            new_tags = list(dict.fromkeys(filter(None, form.tags.data.split("#"))))
+            # list the unique tags, before the edit and on submission
+            old_tags = list(dict.fromkeys(filter(None,
+                                                 entry.tags.split("#"))))
+            new_tags = list(dict.fromkeys(filter(None,
+                                                 form.tags.data.split("#"))))
 
+            # sorts out what tags need to be added and deleted
             delete_tags, add_tags = tags_ordinator(old_tags, new_tags)
 
+            # delete the old tags
             q = models.Tag.delete().where(
                 (models.Tag.entry_id == entry.id) &
                 (models.Tag.tag << delete_tags)
             )
-            q.execute()  # Remove the rows, return number of rows removed.
+            q.execute()
 
+            # adds the new tags
             if add_tags:
                 for tag in add_tags:
                     models.Tag.create(
@@ -134,7 +169,6 @@ def edit(slug):
                   "success")
             return redirect(url_for('index'))
         return render_template('edit.html', form=form)
-    # return "Dear {}, \nWe will edit!!".format(g.user.username)
 
     return redirect(url_for('detail', slug=entry.slug))
 
@@ -142,11 +176,19 @@ def edit(slug):
 @app.route('/entries/<slug>/delete')  # Delete route
 @login_required
 def delete(slug):
+    """
+    Deletes the entry from the Entry model.
+    :param slug: Charfield Entry Model value, entry identifier
+    :return: if the entry owner returns the user to the index view,
+    else, to the entry detail page.
+    """
+    # verifies if entry exists in the model, before deletion
     try:
         entry = models.Entry.get(models.Entry.slug == slug)
     except models.DoesNotExist:
         abort(404)
     else:
+        # Security check: Only entry owner can delete the entry
         if g.user.id != entry.user.id:
             flash("You can't delete this entry \
             only entry owner can delete it!", "error")
@@ -165,6 +207,12 @@ def delete(slug):
 
 @app.route('/entries/<slug>')  # Detail route
 def detail(slug):
+    """
+    Entry detail view, displays the entry content
+    according to the detail.html template.
+    :param slug: Charfield Entry Model value, entry identifier.
+    :return: A rendered detail.html template page for the selected entry.
+    """
     try:
         entry = models.Entry.get(models.Entry.slug == slug)
     except models.DoesNotExist:
@@ -176,6 +224,11 @@ def detail(slug):
 @app.route('/entries/new', methods=('GET', 'POST'))
 @login_required
 def new():
+    """
+    New entry view, for the logged-in user.
+    :return: redirects to the index page.
+    If one of the required fields was not filled will stay on the same view.
+    """
     form = forms.JEntryForm()
     if form.validate_on_submit():
         try:
@@ -191,15 +244,17 @@ def new():
             flash("{}".format(e), "error")
         else:
             if form.tags.data:
-                # eliminate empty strings from the list
-                tags = list(dict.fromkeys(filter(None, form.tags.data.split("#"))))
-                #list(dict.fromkeys('abracadabra'))
+                # lists the unique tags provided in the entry creation
+                tags = list(dict.fromkeys(filter(None,
+                                                 form.tags.data.split("#"))))
+
                 for tag in tags:
                     models.Tag.create(
                         tag=tag,
                         entry=entry
                     )
-            flash("entry has successfully been published.".capitalize(), "success")
+            flash("entry has successfully been published.".capitalize(),
+                  "success")
         return redirect(url_for('index'))
     return render_template('new.html', form=form)
 
@@ -207,13 +262,23 @@ def new():
 @app.route('/')
 @app.route('/entries')
 def index():
-    # return "You got it!"
+    """
+    The blog main page view, it lists all existing entries
+    from the Entry model.
+    :return: a rendered page of edit.html template.
+    """
     entries = models.Entry.select()
     return render_template('index.html', entries=entries)
 
 
 @app.route('/entries/by-tag/<tag>')
 def tagged_entries(tag):
+    """
+    Lists all entries having the same tag parameter.
+    :param tag: CharField Tag Model value
+    :return: a rendered index.html template
+    listing the given related tag entries.
+    """
     entries = models.Entry.select().join(models.Tag) \
         .where(models.Tag.tag == tag).order_by(models.Entry.id)
     return render_template('index.html', entries=entries)
@@ -241,9 +306,15 @@ def tags_ordinator(old_list, new_list):
 
 @app.errorhandler(404)
 def not_found(error):
+    """
+    Error page view for any not found requested route.
+    :return: A rendered 404.html template.
+    """
     return render_template('404.html'), 404
 
 
 if __name__ == '__main__':
+    # initializing the Data-Base and Models
     models.initialize()
+    # Running the Flask Web App, according to the given parameters
     app.run(debug=DEBUG, host=HOST, port=PORT)
