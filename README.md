@@ -19,5 +19,4 @@ Also, the user may view other users entries.
 
 **Authors:**
 
-Ayman Said, 
-https://www.linkedin.com/in/ayman-said-96819726
+Ayman Said [Ayman Said LinkedIn profile] (https://www.linkedin.com/in/ayman-said-96819726) 
