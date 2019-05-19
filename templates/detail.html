@@ -14,11 +14,19 @@
             </div>
             <div class="entry">
                 <h3>What I Learned:</h3>
-                <p>{{ entry.learned }}</p>
+                    {% for line in entry.learned.splitlines() %}
+                        <br>{{ line }}
+                    {% endfor %}
             </div>
             <div class="entry">
                 <h3>Resources to Remember:</h3>
-                <p>{{ entry.resources }}</p>
+                    <ul>
+                        {% for line in entry.resources.splitlines() %}
+                            <li> {{ line }} </li>
+                        {% endfor %}
+                    </ul>
+
+
             </div>
         </article>
     </div>

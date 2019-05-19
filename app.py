@@ -89,8 +89,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/entries/<slug>/edit',
-           methods=['GET', 'POST'])  # The Edit or Update route
+@app.route('/entries/<slug>/edit', methods=['GET', 'POST'])  # The Edit route
 @login_required
 def edit(slug):
     entry = models.Entry.get(models.Entry.slug == slug)
